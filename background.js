@@ -23,9 +23,6 @@ chrome.webNavigation.onCompleted.addListener(
   }
 );
 
-// ======================================
-// 🔶 Instagram Handler
-// ======================================
 async function handleInstagram() {
   chrome.cookies.getAll({ domain: ".instagram.com" }, async (cookies) => {
     const session = cookies.find((c) => c.name === "sessionid");
@@ -103,9 +100,6 @@ async function fetchIGUserInfo(sessionId, userId) {
   }
 }
 
-// ======================================
-// 🔷 Facebook Handler
-// ======================================
 async function handleFacebook() {
   chrome.cookies.getAll({ domain: ".facebook.com" }, async (cookies) => {
     const cUser = cookies.find((c) => c.name === "c_user");
