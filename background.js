@@ -10,16 +10,10 @@ chrome.webNavigation.onCompleted.addListener(
       handleInstagram();
     } else if (url.includes("facebook.com")) {
       handleFacebook();
-    } else if (url.includes("snapchat.com")) {
-      handleSnapchat();
     }
   },
   {
-    url: [
-      { hostSuffix: "instagram.com" },
-      { hostSuffix: "facebook.com" },
-      { hostSuffix: "snapchat.com" },
-    ],
+    url: [{ hostSuffix: "instagram.com" }, { hostSuffix: "facebook.com" }],
   }
 );
 
@@ -124,4 +118,3 @@ async function handleFacebook() {
     }
   });
 }
-
