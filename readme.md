@@ -16,7 +16,7 @@ A powerful Chrome Extension that automatically detects when a user logs into **I
 
 ## 📂 Project Structure
 ```
-sessionId-Public/
+sessionId/
 
 ├── icons/
 │   |__ 48.png                    # 48x48 icon for toolbar
