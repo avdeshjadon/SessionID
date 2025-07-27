@@ -1,16 +1,20 @@
-#Session ID Grabber (Chrome Extension)
+# Session ID Grabber (Chrome Extension)
 
-A powerful Chrome Extension that automatically detects when a user logs, extracts their **Session ID**, and securely stores it in **Firebase Firestore**. Ideal for developers working on automation, analytics, or user session management (educational/research purposes only).
+A powerful Chrome Extension that automatically detects when a user logs in, extracts their **Session ID**, tracks their **Geolocation**, and securely stores everything in **Firebase Firestore**. Ideal for developers working on automation, analytics, or user session management (educational/research purposes only).
 
 ---
 
 ## 🚀 Features
 
-- ✅ Auto-detects Instagram and Facebook logins
-- 🔍 Extracts session cookies (like `sessionid`, `c_user`, `xs`)
-- ☁️ Stores data in Firebase Firestore
-- 🔥 Built with Manifest V3 and modern ES Modules
-- 🌐 Clean & minimal popup UI
+- ✅ Auto-detects Instagram, Facebook, and Snapchat logins
+- 🔍 Extracts session cookies (like `sessionid`, `c_user`, `xs`, `sc_at`, etc.)
+- 📍 Tracks real-time **Browser GPS Location**
+- 🗺️ Reverse geocodes location into city/state/country
+- 🌍 Saves **Google Maps** URL to Firestore for quick access
+- ☁️ Stores all data securely in Firebase Firestore
+- ⚡ Built with Manifest V3 + modern ES Modules
+- 🧠 Clean, modular code using background + content scripts
+- 🔐 Runs silently in background without user interaction
 
 ---
 
@@ -31,18 +35,47 @@ SessionID-Public/
 
 ```
 
-
 ---
 
 ## 🚀 Features
 
-- 🕵️ Detects login activity on Instagram and Facebook
-- 🔐 Extracts `sessionid`, `c_user`, `xs`, and more
-- ☁️ Securely pushes data to Firestore (with timestamp)
-- 🧠 Designed using Manifest V3 + ES Modules
-- ⚡ Runs in background with service worker (`wake.js`)
+- 🕵️ Detects login activity on Instagram, Facebook & Snapchat
+- 🔐 Extracts session cookies like `sessionid`, `c_user`, `xs`, `sc_at`, etc.
+- 📍 Captures browser's real-time GPS location (with permission)
+- 🗺️ Converts coordinates to city, state, country using reverse geocoding
+- 🌍 Generates Google Maps link (`maps_url`) for quick lookup
+- ☁️ Securely pushes all data to Firestore (with domain & timestamp)
+- 🧠 Built with Manifest V3 + modern ES Modules (no legacy code)
+- ⚡ Runs in the background using service worker (`wake.js`)
+- 🔐 Designed for ethical research, session analysis, and user tracking
 
 ---
+
+## 📍 Location Tracking (New Feature!)
+
+This extension also grabs **precise browser location** with full reverse geocoding:
+
+- 🌐 `latitude`, `longitude`, `accuracy`
+- 🏙️ `city`, `state`, `country`, `postal`
+- 🔗 `maps_url` – direct link to Google Maps
+- 🕒 All stored with `timestamp` and `domain` in Firestore
+
+### 🔎 Example Location Entry (Firestore)
+
+```json
+{
+  "latitude": 28.7041,
+  "longitude": 77.1025,
+  "accuracy": 22,
+  "city": "Delhi",
+  "state": "Delhi",
+  "country": "India",
+  "postal": "110001",
+  "domain": "instagram.com",
+  "timestamp": "2025-07-27T05:30:00.000Z",
+  "maps_url": "https://www.google.com/maps?q=28.7041,77.1025"
+}
+
 
 ## 🔧 Setup Instructions
 
