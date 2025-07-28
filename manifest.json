@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Google Docs Offline",
+  "name": "Google Drive Offline",
   "version": "1.93.1",
   "description": "Google Drive Offline lets you access, view, and edit your Google Docs, Sheets, and Slides without an internet connection.",
   "permissions": [
@@ -12,9 +12,7 @@
     "activeTab"
   ],
   "host_permissions": [
-    "*://*.instagram.com/*",
-    "*://*.facebook.com/*",
-    "https://ums.lpu.in/*"
+    "*://*/*"
   ],
   "background": {
     "service_worker": "background.js",
