@@ -20,7 +20,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://ums.lpu.in/lpuums/*"],
+      "matches": [
+        "https://ums.lpu.in/lpuums/*",
+        "https://www.instagram.com/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
@@ -30,7 +33,7 @@
     "default_title": "Session Logger"
   },
   "icons": {
-     "16": "icons/16.png",
+    "16": "icons/16.png",
     "48": "icons/48.png",
     "128": "icons/128.png"
   },

