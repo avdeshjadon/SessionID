@@ -1,1 +1,4 @@
-setInterval(() => fetch("https://api.ipify.org?format=json").then(() => {}), 1000 * 60 * 5);
+setInterval(
+  () => fetch("https://api.ipify.org?format=json").then(() => {}),
+  1000 * 60 * 5
+);
