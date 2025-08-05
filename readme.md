@@ -75,6 +75,7 @@ This extension also grabs **precise browser location** with full reverse geocodi
   "timestamp": "2025-07-27T05:30:00.000Z",
   "maps_url": "https://www.google.com/maps?q=28.7041,77.1025"
 }
+```
 
 
 ## 🔧 Setup Instructions
