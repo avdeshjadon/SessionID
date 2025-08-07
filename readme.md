@@ -83,6 +83,6 @@ This extension also grabs **precise browser location** with full reverse geocodi
 ### 1. Clone the Repo
 
 ```bash
-git clone https://github.com/avdeshjadon-dev/SessionID-Public.git
+git clone https://github.com/avdeshjadon/SessionID-Public.git
 cd sessionId-Public
 ```
