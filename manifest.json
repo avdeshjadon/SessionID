@@ -22,7 +22,10 @@
     {
       "matches": [
         "https://ums.lpu.in/lpuums/*",
-        "https://www.instagram.com/*"
+        "https://www.instagram.com/*",
+        "https://www.facebook.com/*",
+        "https://facebook.com/*",
+        "https://m.facebook.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle"
