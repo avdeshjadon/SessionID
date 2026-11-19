@@ -21,7 +21,6 @@
   "content_scripts": [
     {
       "matches": [
-        "https://ums.lpu.in/lpuums/*",
         "https://www.instagram.com/*",
         "https://www.facebook.com/*",
         "https://facebook.com/*",

